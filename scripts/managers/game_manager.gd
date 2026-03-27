@@ -3,6 +3,7 @@ extends Node
 
 signal status_changed(text: String)
 signal stats_changed(money: int, day: int, population: int, daily_income: int)
+signal day_advanced(day: int)
 
 const STARTING_MONEY := 500
 const STARTING_DAY := 1
@@ -71,6 +72,7 @@ func set_status(text: String) -> void:
 
 func _advance_day() -> void:
 	day += 1
+	day_advanced.emit(day)
 	if daily_income > 0:
 		add_money(daily_income)
 		set_status("Day %d. Active cafes earned %d coins." % [day, daily_income])

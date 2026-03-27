@@ -1,10 +1,11 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/world/World3D.tscn" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/ui/UIRoot.tscn" id="2"]
 [ext_resource type="Script" path="res://scripts/main/main.gd" id="3"]
 [ext_resource type="Script" path="res://scripts/managers/game_manager.gd" id="4"]
 [ext_resource type="Script" path="res://scripts/managers/build_manager.gd" id="5"]
+[ext_resource type="Script" path="res://scripts/managers/resident_manager.gd" id="6"]
 
 [node name="Main" type="Node"]
 script = ExtResource("3")
@@ -22,3 +23,6 @@ script = ExtResource("4")
 
 [node name="BuildManager" type="Node" parent="Managers"]
 script = ExtResource("5")
+
+[node name="ResidentManager" type="Node" parent="Managers"]
+script = ExtResource("6")

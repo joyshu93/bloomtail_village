@@ -13,6 +13,7 @@ description = "A placeholder tree built from primitives."
 effect_text = "Does not require a road."
 requires_road = false
 color = Color(0.32, 0.68, 0.38, 1)
+tags = PackedStringArray("tree")
 mesh_kind = "tree"
 mesh_scale = Vector3(0.68, 1.6, 0.68)
 active_color = Color(0.32, 0.68, 0.38, 1)

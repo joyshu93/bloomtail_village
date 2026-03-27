@@ -13,6 +13,7 @@ description = "A simple ground path."
 effect_text = "Enables nearby buildings."
 requires_road = false
 color = Color(0.73, 0.67, 0.58, 1)
+tags = PackedStringArray("road")
 mesh_kind = "road"
 mesh_scale = Vector3(1, 0.12, 1)
 active_color = Color(0.73, 0.67, 0.58, 1)

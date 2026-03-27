@@ -2,11 +2,14 @@ extends Control
 
 var build_manager: BuildManager
 var game_manager: GameManager
+var resident_manager: ResidentManager
 
 var top_panel: PanelContainer
 var top_stats_label: Label
 var button_panel: PanelContainer
 var button_box: VBoxContainer
+var resident_panel: PanelContainer
+var resident_box: VBoxContainer
 var status_panel: PanelContainer
 var status_title: Label
 var status_label: Label
@@ -16,9 +19,10 @@ var selected_buttons := {}
 var is_ready := false
 var signals_connected := false
 
-func setup(manager: BuildManager, game: GameManager) -> void:
+func setup(manager: BuildManager, game: GameManager, residents: ResidentManager = null) -> void:
 	build_manager = manager
 	game_manager = game
+	resident_manager = residents
 	if is_node_ready():
 		_finish_setup()
 
@@ -91,6 +95,23 @@ func _build_layout() -> void:
 	var button_separator := HSeparator.new()
 	button_box.add_child(button_separator)
 
+	resident_panel = PanelContainer.new()
+	add_child(resident_panel)
+	resident_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	resident_panel.offset_left = -320
+	resident_panel.offset_top = 88
+	resident_panel.offset_right = -16
+	resident_panel.offset_bottom = 410
+
+	resident_box = VBoxContainer.new()
+	resident_box.add_theme_constant_override("separation", 8)
+	resident_panel.add_child(resident_box)
+	resident_box.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	resident_box.offset_left = 12
+	resident_box.offset_top = 12
+	resident_box.offset_right = -12
+	resident_box.offset_bottom = -12
+
 	status_panel = PanelContainer.new()
 	add_child(status_panel)
 	status_panel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
@@ -124,11 +145,14 @@ func _finish_setup() -> void:
 		build_manager.selection_changed.connect(_on_selection_changed)
 		game_manager.status_changed.connect(_on_status_changed)
 		game_manager.stats_changed.connect(_on_stats_changed)
+		if resident_manager != null:
+			resident_manager.residents_changed.connect(_on_residents_changed)
 		signals_connected = true
 	_rebuild_placeable_buttons()
 	_on_selection_changed(build_manager.selected_id)
 	_on_status_changed(game_manager.status_text)
 	_on_stats_changed(game_manager.money, game_manager.day, game_manager.population, game_manager.daily_income)
+	_on_residents_changed([] if resident_manager == null else resident_manager.get_residents())
 
 func _rebuild_placeable_buttons() -> void:
 	for id in selected_buttons.keys():
@@ -187,3 +211,38 @@ func _on_status_changed(text: String) -> void:
 
 func _on_stats_changed(money: int, day: int, population: int, daily_income: int) -> void:
 	top_stats_label.text = "Funds: %d   Day: %d   Village: %d   Cafe Income: %d/day" % [money, day, population, daily_income]
+
+func _on_residents_changed(residents: Array[Dictionary]) -> void:
+	for child in resident_box.get_children():
+		child.queue_free()
+	var title := Label.new()
+	title.text = "Residents"
+	title.add_theme_font_size_override("font_size", 20)
+	resident_box.add_child(title)
+	var hint := Label.new()
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hint.text = "Active houses invite villagers in. Their reactions change with roads, trees, and cafes."
+	resident_box.add_child(hint)
+	if residents.is_empty():
+		var empty := Label.new()
+		empty.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		empty.text = "No residents yet. Activate a house to welcome someone."
+		resident_box.add_child(empty)
+		return
+	for resident in residents:
+		var card := PanelContainer.new()
+		resident_box.add_child(card)
+		var card_box := VBoxContainer.new()
+		card_box.add_theme_constant_override("separation", 4)
+		card.add_child(card_box)
+		var name := Label.new()
+		name.text = "%s the %s" % [resident["name"], resident["species"]]
+		name.add_theme_font_size_override("font_size", 16)
+		card_box.add_child(name)
+		var state := Label.new()
+		state.text = "%s | prefers %s" % [String(resident["state"]).capitalize(), String(resident["preferred_tag"])]
+		card_box.add_child(state)
+		var line := Label.new()
+		line.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		line.text = resident["reaction"]
+		card_box.add_child(line)

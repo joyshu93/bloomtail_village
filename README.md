@@ -32,6 +32,7 @@ It is not the full simulation. The focus is a Camera3D-based prototype where the
 - Active `Cafe` tiles earn coins each day
 - Inactive `House` and `Cafe` tiles do not contribute until a road touches them
 - `Remove` clears a tile but does not refund money
+- A few simple residents can move into active houses and react to roads, trees, and cafes
 
 ## Included in this branch
 
@@ -44,13 +45,14 @@ It is not the full simulation. The focus is a Camera3D-based prototype where the
 - Road drag placement
 - Remove tool
 - Starting funds, day progression, and a minimal active-building economy loop
+- A first resident reaction layer with simple happiness states and one-line comments
 - Road-adjacent active / inactive visuals for `House` and `Cafe`
 - Tighter camera movement and zoom limits for the build area
 
 ## Current limits
 
 - Placeholder primitive meshes only
-- No residents
+- No moving resident characters in the 3D world
 - No save/load
 - No deep economy or scoring
 - No quests or seasonal systems

@@ -1,183 +1,126 @@
 class_name ResidentManager
 extends Node
 
-signal residents_changed(residents: Array)
-signal resident_selected(resident: Dictionary)
+signal residents_changed(residents: Array[Dictionary])
+
+const RESIDENT_PATHS := [
+	"res://resources/residents/miso.tres",
+	"res://resources/residents/pico.tres",
+	"res://resources/residents/mori.tres",
+	"res://resources/residents/nabi.tres"
+]
 
 var build_manager: BuildManager
 var game_manager: GameManager
-
-var templates: Array[ResidentProfile] = []
+var resident_pool: Array[ResidentData] = []
 var residents: Array[Dictionary] = []
-var selected_resident_id := ""
-var _sequence := 0
 
 func setup(builds: BuildManager, game: GameManager) -> void:
 	build_manager = builds
 	game_manager = game
-	templates = GameDatabase.load_residents()
+	_load_pool()
+	if not build_manager.placements_changed.is_connected(_on_world_changed):
+		build_manager.placements_changed.connect(_on_world_changed)
+	if not game_manager.day_advanced.is_connected(_on_day_advanced):
+		game_manager.day_advanced.connect(_on_day_advanced)
+	refresh()
 
-func reset_new_game() -> void:
-	residents.clear()
-	selected_resident_id = ""
-	_sequence = 0
+func refresh() -> void:
+	_sync_residents_to_houses()
+	_update_reactions()
 	residents_changed.emit(get_residents())
-
-func refresh_from_build() -> void:
-	_sync_homes()
-	residents_changed.emit(get_residents())
-
-func update_daily() -> void:
-	_sync_homes()
-	_update_happiness_and_requests()
-	residents_changed.emit(get_residents())
-
-func _sync_homes() -> void:
-	var active_homes := build_manager.get_active_house_cells()
-	var resident_by_home := {}
-	for resident in residents:
-		resident_by_home[resident["home_key"]] = resident
-
-	var next_residents: Array[Dictionary] = []
-	for cell in active_homes:
-		var key := _cell_key(cell)
-		if resident_by_home.has(key):
-			next_residents.append(resident_by_home[key])
-		elif next_residents.size() < 8:
-			next_residents.append(_create_resident_for_home(cell))
-		if next_residents.size() >= 8:
-			break
-	residents = next_residents
-
-func _create_resident_for_home(cell: Vector2i) -> Dictionary:
-	var profile := templates[_sequence % templates.size()]
-	_sequence += 1
-	var resident := {
-		"id": "%s_%d" % [profile.id, _sequence],
-		"name": profile.display_name,
-		"species": profile.species,
-		"personality": profile.personality,
-		"preferred_tag": profile.preferred_tag,
-		"favorite_line": profile.favorite_line,
-		"happiness": 58,
-		"current_line": "This cottage feels promising.",
-		"request": "",
-		"request_done": false,
-		"home": cell,
-		"home_key": _cell_key(cell)
-	}
-	game_manager.push_notification("%s the %s wants to move in." % [resident["name"], resident["species"]])
-	return resident
-
-func _update_happiness_and_requests() -> void:
-	for resident in residents:
-		var home: Vector2i = resident["home"]
-		var preferred_tag := String(resident["preferred_tag"])
-		var nearby_preference := build_manager.has_tag_near(home, preferred_tag, 2)
-		var nearby_plaza := build_manager.has_tag_near(home, "plaza", 3)
-		var nearby_road := build_manager.has_tag_near(home, "road", 1)
-		var happiness := int(resident["happiness"])
-		happiness += (2 if nearby_preference else -3)
-		happiness += (1 if nearby_plaza else 0)
-		happiness += (1 if nearby_road else -1)
-		happiness = clamp(happiness, 20, 100)
-		resident["happiness"] = happiness
-		if not nearby_preference:
-			resident["request"] = _request_text(preferred_tag)
-			resident["request_done"] = false
-			resident["current_line"] = resident["request"]
-		else:
-			if not bool(resident["request_done"]):
-				game_manager.push_notification("%s looks happier after the new decoration." % resident["name"])
-			resident["request_done"] = true
-			resident["current_line"] = resident["favorite_line"]
-
-func _request_text(tag: String) -> String:
-	match tag:
-		"flowers":
-			return "Could we plant a few flowers nearby?"
-		"trees":
-			return "A quiet tree-lined corner would be lovely."
-		"bench":
-			return "I want a bench close to home."
-		"cafe":
-			return "A cafe nearby would make mornings better."
-		"lamp":
-			return "A street lamp would make this lane cozy at night."
-		_:
-			return "I hope this area gets a little cozier."
 
 func get_residents() -> Array[Dictionary]:
 	return residents.duplicate(true)
 
-func get_average_happiness() -> int:
-	if residents.is_empty():
-		return 50
-	var total := 0
-	for resident in residents:
-		total += int(resident["happiness"])
-	return int(round(float(total) / residents.size()))
+func _on_world_changed() -> void:
+	refresh()
 
-func get_resident_at(cell: Vector2i) -> Dictionary:
-	for resident in residents:
-		if resident["home"] == cell:
-			return resident.duplicate(true)
-	return {}
-
-func select_resident_at(cell: Vector2i) -> bool:
-	var resident := get_resident_at(cell)
-	if resident.is_empty():
-		return false
-	selected_resident_id = resident["id"]
+func _on_day_advanced(_day: int) -> void:
+	_update_reactions()
 	residents_changed.emit(get_residents())
-	resident_selected.emit(resident)
-	return true
 
-func export_state() -> Dictionary:
-	var export_residents: Array[Dictionary] = []
-	for resident in residents:
-		export_residents.append({
-			"id": resident["id"],
-			"name": resident["name"],
-			"species": resident["species"],
-			"personality": resident["personality"],
-			"preferred_tag": resident["preferred_tag"],
-			"favorite_line": resident["favorite_line"],
-			"happiness": resident["happiness"],
-			"current_line": resident["current_line"],
-			"request": resident["request"],
-			"request_done": resident["request_done"],
-			"home_x": resident["home"].x,
-			"home_y": resident["home"].y
-		})
-	return {
-		"residents": export_residents,
-		"selected_resident_id": selected_resident_id,
-		"sequence": _sequence
-	}
+func _load_pool() -> void:
+	resident_pool.clear()
+	for path in RESIDENT_PATHS:
+		var resource: Resource = load(path)
+		if resource is ResidentData:
+			var data: ResidentData = resource
+			resident_pool.append(data)
 
-func import_state(data: Dictionary) -> void:
-	residents.clear()
-	for raw_resident in data.get("residents", []):
-		var item: Dictionary = raw_resident
-		var home := Vector2i(int(item.get("home_x", 0)), int(item.get("home_y", 0)))
-		residents.append({
-			"id": String(item.get("id", "")),
-			"name": item.get("name", ""),
-			"species": item.get("species", ""),
-			"personality": item.get("personality", ""),
-			"preferred_tag": item.get("preferred_tag", ""),
-			"favorite_line": item.get("favorite_line", ""),
-			"happiness": int(item.get("happiness", 55)),
-			"current_line": item.get("current_line", ""),
-			"request": item.get("request", ""),
-			"request_done": bool(item.get("request_done", false)),
+func _sync_residents_to_houses() -> void:
+	var homes: Array[Vector2i] = build_manager.get_active_house_cells()
+	var next_residents: Array[Dictionary] = []
+	var limit: int = mini(homes.size(), resident_pool.size())
+	for i in range(limit):
+		var data: ResidentData = resident_pool[i]
+		var home: Vector2i = homes[i]
+		next_residents.append({
+			"id": data.id,
+			"name": data.display_name,
+			"species": data.species,
+			"mood_tag": data.mood_tag,
+			"preferred_tag": data.preferred_tag,
 			"home": home,
-			"home_key": _cell_key(home)
+			"state": "neutral",
+			"happiness": 50,
+			"reaction": ""
 		})
-	selected_resident_id = String(data.get("selected_resident_id", ""))
-	_sequence = int(data.get("sequence", residents.size()))
-	residents_changed.emit(get_residents())
+	residents = next_residents
 
-func _cell_key(cell: Vector2i) -> String:
-	return "%d,%d" % [cell.x, cell.y]
+func _update_reactions() -> void:
+	for resident in residents:
+		var home: Vector2i = resident["home"]
+		var preferred_tag: String = String(resident["preferred_tag"])
+		var likes_preference: bool = build_manager.count_tag_near(home, preferred_tag, 2, true) > 0
+		var nearby_road: bool = build_manager.count_tag_near(home, "road", 1, false) > 0
+		var state: String = "neutral"
+		var happiness: int = 50
+		var reaction: String = _neutral_reaction(resident)
+		if not nearby_road:
+			state = "unhappy"
+			happiness = 30
+			reaction = "Getting around feels awkward without a nearby road."
+		elif likes_preference:
+			state = "happy"
+			happiness = 74
+			reaction = _preferred_reaction(resident)
+		elif preferred_tag == "cafe":
+			state = "neutral"
+			happiness = 48
+			reaction = "A cozy cafe nearby would make this place feel lively."
+		elif preferred_tag == "tree":
+			state = "neutral"
+			happiness = 46
+			reaction = "I would love a few more trees around the house."
+		elif preferred_tag == "road":
+			state = "neutral"
+			happiness = 52
+			reaction = "A tidy little road makes the village feel easier to cross."
+		resident["state"] = state
+		resident["happiness"] = happiness
+		resident["reaction"] = reaction
+
+func _preferred_reaction(resident: Dictionary) -> String:
+	match String(resident["preferred_tag"]):
+		"tree":
+			return "These trees make the village feel calm and tucked away."
+		"cafe":
+			return "I love having a cafe nearby. It makes mornings feel warm."
+		"road":
+			return "These roads make it easy to wander around town."
+		_:
+			return "This part of town suits me nicely."
+
+func _neutral_reaction(resident: Dictionary) -> String:
+	match String(resident["mood_tag"]):
+		"gentle":
+			return "It is quiet here. I think I could settle in."
+		"chatty":
+			return "This village is starting to feel lively."
+		"calm":
+			return "A peaceful corner like this is enough for me."
+		"curious":
+			return "I wonder what this little village will become."
+		_:
+			return "This village has potential."

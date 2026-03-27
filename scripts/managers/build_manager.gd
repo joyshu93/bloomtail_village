@@ -55,7 +55,7 @@ func get_selected_cost() -> int:
 	return 0 if selected == null else selected.cost
 
 func get_place_cost(placeable_id: String) -> int:
-	var data := get_placeable(placeable_id)
+	var data: PlaceableData = get_placeable(placeable_id)
 	return 0 if data == null else data.cost
 
 func select_placeable(placeable_id: String) -> void:
@@ -257,6 +257,35 @@ func get_placements() -> Array[Dictionary]:
 			"active": bool(entry.get("active", true))
 		})
 	return items
+
+func get_active_house_cells() -> Array[Vector2i]:
+	var cells: Array[Vector2i] = []
+	for item in get_placements():
+		var data: PlaceableData = item["data"]
+		if data == null or data.id != "house" or not bool(item["active"]):
+			continue
+		cells.append(item["cell"])
+	for i in range(cells.size()):
+		for j in range(i + 1, cells.size()):
+			var left: Vector2i = cells[i]
+			var right: Vector2i = cells[j]
+			if right.x < left.x or (right.x == left.x and right.y < left.y):
+				cells[i] = right
+				cells[j] = left
+	return cells
+
+func count_tag_near(origin: Vector2i, tag: String, radius: int, active_only: bool) -> int:
+	var total := 0
+	for item in get_placements():
+		var data: PlaceableData = item["data"]
+		if data == null or not data.tags.has(tag):
+			continue
+		if active_only and not bool(item["active"]):
+			continue
+		var cell: Vector2i = item["cell"]
+		if abs(cell.x - origin.x) <= radius and abs(cell.y - origin.y) <= radius:
+			total += 1
+	return total
 
 func world_to_cell(world_position: Vector3) -> Vector2i:
 	var origin := _origin_offset()
