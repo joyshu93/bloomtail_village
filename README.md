@@ -19,15 +19,17 @@ It is not the full simulation. The focus is a Camera3D-based prototype where the
 - Mouse wheel: zoom camera
 - Left UI buttons: choose `Road`, `House`, `Cafe`, or `Tree`
 - Left click on the ground: place selected item
+- Hold left mouse with `Road` selected: drag to paint roads
 
 ## Included in this branch
 
 - `Main`, `World3D`, `UIRoot`, `Managers`
 - `Node3D` + `Camera3D`
-- Flat build grid with hover highlight
-- Ghost preview with valid / blocked states
+- Flat build grid with stronger hover-cell feedback
+- Ghost preview with valid / blocked / inactive states
 - Grid-snapped placement
 - Duplicate placement blocking
+- Road drag placement
 - Road-adjacent active / inactive visuals for `House` and `Cafe`
 
 ## Current limits
@@ -37,4 +39,4 @@ It is not the full simulation. The focus is a Camera3D-based prototype where the
 - No save/load
 - No economy or scoring
 - No quests or seasonal systems
-- No detailed UI beyond selection and status text
+- UI is still intentionally minimal and placeholder-driven

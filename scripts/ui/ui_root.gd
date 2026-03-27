@@ -7,6 +7,8 @@ var button_panel: PanelContainer
 var button_box: VBoxContainer
 var status_panel: PanelContainer
 var status_label: Label
+var selection_title: Label
+var selection_detail: Label
 var selected_buttons := {}
 var is_ready := false
 var signals_connected := false
@@ -31,8 +33,8 @@ func _build_layout() -> void:
 	button_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
 	button_panel.offset_left = 16
 	button_panel.offset_top = 16
-	button_panel.offset_right = 206
-	button_panel.offset_bottom = 250
+	button_panel.offset_right = 274
+	button_panel.offset_bottom = 348
 
 	button_box = VBoxContainer.new()
 	button_box.add_theme_constant_override("separation", 8)
@@ -44,20 +46,37 @@ func _build_layout() -> void:
 	button_box.offset_bottom = -12
 
 	var title := Label.new()
-	title.text = "Placeables"
+	title.text = "Build Menu"
+	title.add_theme_font_size_override("font_size", 20)
 	button_box.add_child(title)
 
 	var hint := Label.new()
-	hint.text = "Select an item and click the ground."
+	hint.text = "Pick a placeable, then click the ground.\nRoad supports drag placement."
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	button_box.add_child(hint)
+
+	var separator := HSeparator.new()
+	button_box.add_child(separator)
+
+	selection_title = Label.new()
+	selection_title.text = "Selected: -"
+	selection_title.add_theme_font_size_override("font_size", 16)
+	button_box.add_child(selection_title)
+
+	selection_detail = Label.new()
+	selection_detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	selection_detail.text = "Choose an item to start placing."
+	button_box.add_child(selection_detail)
+
+	var button_separator := HSeparator.new()
+	button_box.add_child(button_separator)
 
 	status_panel = PanelContainer.new()
 	add_child(status_panel)
 	status_panel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
 	status_panel.offset_left = 16
-	status_panel.offset_top = -116
-	status_panel.offset_right = 380
+	status_panel.offset_top = -132
+	status_panel.offset_right = 430
 	status_panel.offset_bottom = -16
 
 	status_label = Label.new()
@@ -80,14 +99,16 @@ func _finish_setup() -> void:
 	_on_status_changed(game_manager.status_text)
 
 func _rebuild_placeable_buttons() -> void:
-	for name in selected_buttons.keys():
-		var button: Button = selected_buttons[name]
-		button.queue_free()
+	for id in selected_buttons.keys():
+		var existing: Button = selected_buttons[id]
+		existing.queue_free()
 	selected_buttons.clear()
 	for placeable in build_manager.get_placeables():
 		var button := Button.new()
-		button.text = placeable.display_name
-		button.custom_minimum_size = Vector2(0, 40)
+		button.text = "%s  [%s]" % [placeable.display_name, placeable.category.capitalize()]
+		button.custom_minimum_size = Vector2(0, 46)
+		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		button.toggle_mode = true
 		button.pressed.connect(_on_placeable_button_pressed.bind(placeable.id))
 		button_box.add_child(button)
 		selected_buttons[placeable.id] = button
@@ -97,9 +118,18 @@ func _on_placeable_button_pressed(placeable_id: String) -> void:
 
 func _on_selection_changed(placeable_id: String) -> void:
 	for id in selected_buttons.keys():
-		selected_buttons[id].modulate = Color(1, 1, 1, 1)
-	if placeable_id != "" and selected_buttons.has(placeable_id):
-		selected_buttons[placeable_id].modulate = Color(1.0, 0.94, 0.76, 1.0)
+		var button: Button = selected_buttons[id]
+		var is_selected := id == placeable_id
+		button.button_pressed = is_selected
+		button.modulate = Color(1.0, 0.95, 0.8, 1.0) if is_selected else Color(1, 1, 1, 1)
+	var selected: PlaceableData = build_manager.get_selected_data()
+	if selected == null:
+		selection_title.text = "Selected: -"
+		selection_detail.text = "Choose an item to start placing."
+		return
+	selection_title.text = "Selected: %s" % selected.display_name
+	var road_text := "Needs adjacent road" if selected.requires_road else "No road needed"
+	selection_detail.text = "%s\n%s" % [selected.description, road_text]
 
 func _on_status_changed(text: String) -> void:
-	status_label.text = "%s\n\nControls:\nWASD / Arrow Keys move camera\nMouse Wheel zoom\nLeft Click place" % text
+	status_label.text = "%s\n\nControls:\nWASD / Arrow Keys move camera\nMouse Wheel zoom\nLeft Click place\nRoad: drag to paint" % text

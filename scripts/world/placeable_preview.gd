@@ -20,13 +20,7 @@ func show_preview(data: PlaceableData, world_position: Vector3, can_place: bool,
 		add_child(current_visual)
 	position = world_position
 	visible = true
-	var target_color := data.preview_color
-	if not can_place:
-		target_color = data.blocked_color
-	elif data.requires_road and not would_be_active:
-		target_color = data.inactive_color
-		target_color.a = 0.45
-	_apply_material(current_visual, target_color, true)
+	apply_state(current_visual, data, can_place, would_be_active, true)
 
 func hide_preview() -> void:
 	visible = false
@@ -35,16 +29,26 @@ static func create_visual(data: PlaceableData, size: float) -> Node3D:
 	var root := Node3D.new()
 	match data.mesh_kind:
 		"road":
-			_add_box(root, Vector3(size * 0.92, 0.12, size * 0.92), Vector3(0.0, 0.06, 0.0))
+			_add_box(root, Vector3(size * 0.94, 0.08, size * 0.94), Vector3(0.0, 0.04, 0.0))
+			_add_box(root, Vector3(size * 0.14, 0.085, size * 0.55), Vector3(0.0, 0.05, 0.0))
 		"house":
 			_add_box(root, Vector3(size * 0.78, 1.5, size * 0.78), Vector3(0.0, 0.75, 0.0))
-			_add_box(root, Vector3(size * 0.92, 0.18, size * 0.92), Vector3(0.0, 1.58, 0.0))
+			_add_box(root, Vector3(size * 0.96, 0.18, size * 0.96), Vector3(0.0, 1.58, 0.0))
+			_add_box(root, Vector3(size * 0.2, 0.72, size * 0.16), Vector3(0.0, 0.36, size * 0.31))
+			_add_box(root, Vector3(size * 0.14, 0.45, size * 0.14), Vector3(size * 0.24, 1.96, -size * 0.12))
 		"cafe":
 			_add_box(root, Vector3(size * 0.9, 1.2, size * 0.9), Vector3(0.0, 0.6, 0.0))
+			_add_box(root, Vector3(size * 0.98, 0.12, size * 0.42), Vector3(0.0, 1.15, size * 0.16))
+			_add_cylinder(root, size * 0.1, 0.85, Vector3(-size * 0.22, 0.42, size * 0.32))
+			_add_cylinder(root, size * 0.1, 0.85, Vector3(size * 0.22, 0.42, size * 0.32))
 			_add_cylinder(root, size * 0.12, 0.9, Vector3(size * 0.22, 1.65, -size * 0.22))
+			_add_sphere(root, size * 0.1, Vector3(size * 0.22, 2.05, -size * 0.22))
 		"tree":
 			_add_cylinder(root, size * 0.12, 1.0, Vector3(0.0, 0.5, 0.0))
-			_add_sphere(root, size * 0.34, Vector3(0.0, 1.35, 0.0))
+			_add_sphere(root, size * 0.28, Vector3(0.0, 1.2, 0.0))
+			_add_sphere(root, size * 0.22, Vector3(-size * 0.16, 1.42, 0.0))
+			_add_sphere(root, size * 0.22, Vector3(size * 0.16, 1.42, 0.0))
+			_add_sphere(root, size * 0.18, Vector3(0.0, 1.66, size * 0.12))
 		_:
 			_add_box(root, Vector3(size * 0.8, 0.8, size * 0.8), Vector3(0.0, 0.4, 0.0))
 	return root
@@ -52,11 +56,27 @@ static func create_visual(data: PlaceableData, size: float) -> Node3D:
 static func apply_color(root: Node3D, color: Color, transparent: bool) -> void:
 	_apply_material(root, color, transparent)
 
+static func apply_state(root: Node3D, data: PlaceableData, can_place: bool, is_active: bool, transparent: bool) -> void:
+	var target_color := data.active_color
+	if transparent:
+		target_color = data.preview_color
+	if not can_place:
+		target_color = data.blocked_color
+	elif data.requires_road and not is_active:
+		target_color = data.inactive_color
+		if transparent:
+			target_color.a = 0.45
+	_apply_material(root, target_color, transparent)
+	_update_state_marker(root, can_place, is_active, transparent)
+
 static func _apply_material(root: Node, color: Color, transparent: bool) -> void:
 	for child in root.get_children():
 		if child is MeshInstance3D:
 			var material := StandardMaterial3D.new()
 			material.albedo_color = color
+			material.emission_enabled = true
+			material.emission = color * 0.25
+			material.roughness = 0.92
 			if transparent:
 				material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 				material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
@@ -67,6 +87,24 @@ static func _apply_material(root: Node, color: Color, transparent: bool) -> void
 func _clear_visual() -> void:
 	for child in get_children():
 		child.queue_free()
+
+static func _update_state_marker(root: Node3D, can_place: bool, is_active: bool, transparent: bool) -> void:
+	var marker_name := "__StateMarker"
+	var marker_root := root.get_node_or_null(marker_name) as Node3D
+	if can_place and is_active:
+		if marker_root != null:
+			marker_root.queue_free()
+		return
+	if marker_root == null:
+		marker_root = Node3D.new()
+		marker_root.name = marker_name
+		root.add_child(marker_root)
+		_add_box(marker_root, Vector3(0.26, 1.2, 0.26), Vector3(0.0, 2.0, 0.0))
+		_add_box(marker_root, Vector3(0.26, 0.26, 0.26), Vector3(0.0, 1.2, 0.0))
+	var marker_color := Color(1.0, 0.28, 0.28, 0.9)
+	if can_place and not is_active:
+		marker_color = Color(1.0, 0.77, 0.34, 0.9)
+	_apply_material(marker_root, marker_color, transparent)
 
 static func _add_box(parent: Node3D, mesh_size: Vector3, mesh_position: Vector3) -> void:
 	var mesh := BoxMesh.new()

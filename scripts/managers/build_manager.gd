@@ -36,12 +36,22 @@ func get_placeable(placeable_id: String) -> PlaceableData:
 func get_selected_data() -> PlaceableData:
 	return placeables.get(selected_id) as PlaceableData
 
+func get_selected_name() -> String:
+	var selected := get_selected_data()
+	return "" if selected == null else selected.display_name
+
+func is_road_selected() -> bool:
+	return selected_id == "road"
+
 func select_placeable(placeable_id: String) -> void:
 	if not placeables.has(placeable_id):
 		return
 	selected_id = placeable_id
 	selection_changed.emit(selected_id)
-	game_manager.set_status("%s selected. Move the mouse over the grid and left click to place." % get_selected_data().display_name)
+	if is_road_selected():
+		game_manager.set_status("Road selected. Left click and drag across the grid to lay roads quickly.")
+	else:
+		game_manager.set_status("%s selected. Move the mouse over the grid and left click to place." % get_selected_data().display_name)
 
 func is_inside(cell: Vector2i) -> bool:
 	return cell.x >= 0 and cell.y >= 0 and cell.x < GRID_WIDTH and cell.y < GRID_DEPTH
@@ -52,23 +62,45 @@ func is_occupied(cell: Vector2i) -> bool:
 func can_place(cell: Vector2i) -> bool:
 	return is_inside(cell) and not is_occupied(cell)
 
-func would_be_active(cell: Vector2i, data: PlaceableData = null) -> bool:
-	var current_data := data if data != null else get_selected_data()
-	if current_data == null or not current_data.requires_road:
-		return true
+func can_place_id(placeable_id: String, cell: Vector2i) -> bool:
+	return placeables.has(placeable_id) and can_place(cell)
+
+func has_road_neighbor(cell: Vector2i) -> bool:
 	for offset in [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
 		var neighbor_key := _cell_key(cell + offset)
 		if placements.has(neighbor_key) and placements[neighbor_key]["id"] == "road":
 			return true
 	return false
 
+func would_be_active(cell: Vector2i, data: PlaceableData = null) -> bool:
+	var current_data := data if data != null else get_selected_data()
+	if current_data == null or not current_data.requires_road:
+		return true
+	return has_road_neighbor(cell)
+
+func get_hover_message(cell: Vector2i, placeable_id: String = selected_id) -> String:
+	if not placeables.has(placeable_id):
+		return "Select a placeable from the build menu."
+	var data: PlaceableData = placeables[placeable_id]
+	if not is_inside(cell):
+		return "Outside the buildable area."
+	if is_occupied(cell):
+		return "Cell %d, %d is occupied." % [cell.x + 1, cell.y + 1]
+	if data.requires_road and not would_be_active(cell, data):
+		return "%s can be placed here, but it will stay inactive until a road touches it." % data.display_name
+	return "Ready to place %s at %d, %d." % [data.display_name, cell.x + 1, cell.y + 1]
+
 func place_selected(cell: Vector2i) -> bool:
+	return place(selected_id, cell)
+
+func place(placeable_id: String, cell: Vector2i, silent: bool = false) -> bool:
+	if not placeables.has(placeable_id):
+		return false
 	if not can_place(cell):
-		game_manager.set_status("That cell is already occupied or outside the buildable area.")
+		if not silent:
+			game_manager.set_status("That cell is already occupied or outside the buildable area.")
 		return false
-	var data: PlaceableData = get_selected_data()
-	if data == null:
-		return false
+	var data: PlaceableData = placeables.get(placeable_id)
 	var active_after_place := would_be_active(cell, data)
 	placements[_cell_key(cell)] = {
 		"id": data.id,
@@ -76,10 +108,11 @@ func place_selected(cell: Vector2i) -> bool:
 	}
 	_recalculate_activation()
 	placements_changed.emit()
-	if data.requires_road and not active_after_place:
-		game_manager.set_status("%s placed at %d, %d, but it is inactive until a road touches it." % [data.display_name, cell.x + 1, cell.y + 1])
-	else:
-		game_manager.set_status("%s placed at %d, %d." % [data.display_name, cell.x + 1, cell.y + 1])
+	if not silent:
+		if data.requires_road and not active_after_place:
+			game_manager.set_status("%s placed at %d, %d, but it is inactive until a road touches it." % [data.display_name, cell.x + 1, cell.y + 1])
+		else:
+			game_manager.set_status("%s placed at %d, %d." % [data.display_name, cell.x + 1, cell.y + 1])
 	return true
 
 func get_placements() -> Array[Dictionary]:
