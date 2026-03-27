@@ -25,7 +25,7 @@ It is not the full simulation. The focus is a Camera3D-based prototype where the
 ## Minimal loop
 
 - Start with `500` funds
-- `Road`, `House`, `Cafe`, and `Tree` all cost money to place
+- `Road`, `House`, `Cafe`, and `Tree` all cost money to place, and the cost is actually deducted on successful placement
 - If funds are too low, placement is blocked
 - A new day passes automatically every few seconds
 - Active `House` tiles add to the village count

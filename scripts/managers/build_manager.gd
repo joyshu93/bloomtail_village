@@ -54,6 +54,10 @@ func get_selected_cost() -> int:
 	var selected := get_selected_data()
 	return 0 if selected == null else selected.cost
 
+func get_place_cost(placeable_id: String) -> int:
+	var data := get_placeable(placeable_id)
+	return 0 if data == null else data.cost
+
 func select_placeable(placeable_id: String) -> void:
 	if placeable_id != REMOVE_TOOL_ID and not placeables.has(placeable_id):
 		return
@@ -157,7 +161,7 @@ func place(placeable_id: String, cell: Vector2i, silent: bool = false) -> bool:
 	var data: PlaceableData = placeables.get(placeable_id)
 	if not game_manager.spend_money(data.cost):
 		if not silent:
-			game_manager.set_status("Not enough money for %s. Need %d coins." % [data.display_name, data.cost])
+			game_manager.set_status("Not enough money for %s. Need %d coins, have %d." % [data.display_name, data.cost, game_manager.money])
 		return false
 	var active_after_place := would_be_active(cell, data)
 	placements[_cell_key(cell)] = {
@@ -168,9 +172,9 @@ func place(placeable_id: String, cell: Vector2i, silent: bool = false) -> bool:
 	placements_changed.emit()
 	if not silent:
 		if data.requires_road and not active_after_place:
-			game_manager.set_status("%s placed at %d, %d, but it is inactive until a road touches it." % [data.display_name, cell.x + 1, cell.y + 1])
+			game_manager.set_status("%s placed at %d, %d for %d coins, but it is inactive until a road touches it." % [data.display_name, cell.x + 1, cell.y + 1, data.cost])
 		else:
-			game_manager.set_status("%s placed at %d, %d." % [data.display_name, cell.x + 1, cell.y + 1])
+			game_manager.set_status("%s placed at %d, %d for %d coins." % [data.display_name, cell.x + 1, cell.y + 1, data.cost])
 	return true
 
 func place_many(placeable_id: String, cells: Array[Vector2i], silent: bool = false) -> int:
@@ -179,11 +183,13 @@ func place_many(placeable_id: String, cells: Array[Vector2i], silent: bool = fal
 	if not placeables.has(placeable_id):
 		return 0
 	var placed_count := 0
+	var stopped_for_funds := false
 	for cell in cells:
 		if not can_place(cell):
 			continue
 		var data: PlaceableData = placeables.get(placeable_id)
 		if not game_manager.spend_money(data.cost):
+			stopped_for_funds = true
 			break
 		placements[_cell_key(cell)] = {
 			"id": data.id,
@@ -192,13 +198,21 @@ func place_many(placeable_id: String, cells: Array[Vector2i], silent: bool = fal
 		placed_count += 1
 	if placed_count <= 0:
 		if not silent:
-			game_manager.set_status("That area is already occupied or outside the buildable area.")
+			if stopped_for_funds:
+				var place_cost := get_place_cost(placeable_id)
+				game_manager.set_status("Not enough money to place %s. Need %d coins, have %d." % [get_selected_name(), place_cost, game_manager.money])
+			else:
+				game_manager.set_status("That area is already occupied or outside the buildable area.")
 		return 0
 	_recalculate_activation()
 	placements_changed.emit()
 	if not silent:
 		var plural := "" if placed_count == 1 else "s"
-		game_manager.set_status("%s placed on %d tile%s." % [get_selected_name(), placed_count, plural])
+		var total_spent := placed_count * get_place_cost(placeable_id)
+		if stopped_for_funds:
+			game_manager.set_status("%s placed on %d tile%s for %d coins before funds ran out." % [get_selected_name(), placed_count, plural, total_spent])
+		else:
+			game_manager.set_status("%s placed on %d tile%s for %d coins." % [get_selected_name(), placed_count, plural, total_spent])
 	return placed_count
 
 func remove_at(cell: Vector2i, silent: bool = false) -> bool:

@@ -229,7 +229,9 @@ func _end_drag() -> void:
 	is_dragging_road = false
 	var placed_count := drag_placed_cells.size()
 	if placed_count > 0:
-		game_manager.set_status("Road drag placed %d tile%s." % [placed_count, "" if placed_count == 1 else "s"])
+		var road_cost := build_manager.get_place_cost("road")
+		var total_spent := placed_count * road_cost
+		game_manager.set_status("Road drag placed %d tile%s for %d coins." % [placed_count, "" if placed_count == 1 else "s", total_spent])
 	elif build_manager.selected_id == "road":
 		game_manager.set_status("Road selected. Drag across the ground or click a single cell to place.")
 	drag_placed_cells.clear()
