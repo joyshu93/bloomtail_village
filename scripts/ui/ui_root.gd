@@ -119,7 +119,7 @@ func _on_placeable_button_pressed(placeable_id: String) -> void:
 func _on_selection_changed(placeable_id: String) -> void:
 	for id in selected_buttons.keys():
 		var button: Button = selected_buttons[id]
-		var is_selected := id == placeable_id
+		var is_selected: bool = String(id) == placeable_id
 		button.button_pressed = is_selected
 		button.modulate = Color(1.0, 0.95, 0.8, 1.0) if is_selected else Color(1, 1, 1, 1)
 	var selected: PlaceableData = build_manager.get_selected_data()
@@ -128,7 +128,7 @@ func _on_selection_changed(placeable_id: String) -> void:
 		selection_detail.text = "Choose an item to start placing."
 		return
 	selection_title.text = "Selected: %s" % selected.display_name
-	var road_text := "Needs adjacent road" if selected.requires_road else "No road needed"
+	var road_text: String = "Needs adjacent road" if selected.requires_road else "No road needed"
 	selection_detail.text = "%s\n%s" % [selected.description, road_text]
 
 func _on_status_changed(text: String) -> void:
