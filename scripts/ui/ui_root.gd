@@ -6,6 +6,7 @@ var game_manager: GameManager
 var button_panel: PanelContainer
 var button_box: VBoxContainer
 var status_panel: PanelContainer
+var status_title: Label
 var status_label: Label
 var selection_title: Label
 var selection_detail: Label
@@ -80,10 +81,20 @@ func _build_layout() -> void:
 	status_panel.offset_bottom = -16
 
 	status_label = Label.new()
+	status_title = Label.new()
+	status_title.text = "Status"
+	status_title.add_theme_font_size_override("font_size", 16)
+	status_panel.add_child(status_title)
+	status_title.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+	status_title.offset_left = 12
+	status_title.offset_top = 10
+	status_title.offset_right = 120
+	status_title.offset_bottom = 32
+
 	status_panel.add_child(status_label)
 	status_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	status_label.offset_left = 12
-	status_label.offset_top = 12
+	status_label.offset_top = 36
 	status_label.offset_right = -12
 	status_label.offset_bottom = -12
 	status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -112,6 +123,14 @@ func _rebuild_placeable_buttons() -> void:
 		button.pressed.connect(_on_placeable_button_pressed.bind(placeable.id))
 		button_box.add_child(button)
 		selected_buttons[placeable.id] = button
+	var remove_button := Button.new()
+	remove_button.text = "Remove  [Tool]"
+	remove_button.custom_minimum_size = Vector2(0, 46)
+	remove_button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	remove_button.toggle_mode = true
+	remove_button.pressed.connect(_on_placeable_button_pressed.bind(BuildManager.REMOVE_TOOL_ID))
+	button_box.add_child(remove_button)
+	selected_buttons[BuildManager.REMOVE_TOOL_ID] = remove_button
 
 func _on_placeable_button_pressed(placeable_id: String) -> void:
 	build_manager.select_placeable(placeable_id)
@@ -123,6 +142,10 @@ func _on_selection_changed(placeable_id: String) -> void:
 		button.button_pressed = is_selected
 		button.modulate = Color(1.0, 0.95, 0.8, 1.0) if is_selected else Color(1, 1, 1, 1)
 	var selected: PlaceableData = build_manager.get_selected_data()
+	if build_manager.is_remove_selected():
+		selection_title.text = "Selected: Remove"
+		selection_detail.text = "Click a placed object to remove it.\nEmpty cells cannot be removed."
+		return
 	if selected == null:
 		selection_title.text = "Selected: -"
 		selection_detail.text = "Choose an item to start placing."

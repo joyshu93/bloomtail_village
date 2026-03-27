@@ -7,6 +7,8 @@ var current_visual: Node3D
 
 func setup(size: float) -> void:
 	cell_size = size
+	_clear_visual()
+	current_id = ""
 	visible = false
 
 func show_preview(data: PlaceableData, world_position: Vector3, can_place: bool, would_be_active: bool) -> void:
@@ -21,6 +23,19 @@ func show_preview(data: PlaceableData, world_position: Vector3, can_place: bool,
 	position = world_position
 	visible = true
 	apply_state(current_visual, data, can_place, would_be_active, true)
+
+func show_remove_preview(data: PlaceableData, world_position: Vector3, is_active: bool) -> void:
+	if data == null:
+		hide_preview()
+		return
+	if current_visual == null or current_id != data.id:
+		_clear_visual()
+		current_id = data.id
+		current_visual = create_visual(data, cell_size)
+		add_child(current_visual)
+	position = world_position
+	visible = true
+	apply_remove_state(current_visual, is_active)
 
 func hide_preview() -> void:
 	visible = false
@@ -69,6 +84,11 @@ static func apply_state(root: Node3D, data: PlaceableData, can_place: bool, is_a
 	_apply_material(root, target_color, transparent)
 	_update_state_marker(root, can_place, is_active, transparent)
 
+static func apply_remove_state(root: Node3D, is_active: bool) -> void:
+	var remove_color := Color(1.0, 0.46, 0.68, 0.55)
+	_apply_material(root, remove_color, true)
+	_update_state_marker(root, false, is_active, true)
+
 static func _apply_material(root: Node, color: Color, transparent: bool) -> void:
 	for child in root.get_children():
 		if child is MeshInstance3D:
@@ -86,7 +106,9 @@ static func _apply_material(root: Node, color: Color, transparent: bool) -> void
 
 func _clear_visual() -> void:
 	for child in get_children():
+		remove_child(child)
 		child.queue_free()
+	current_visual = null
 
 static func _update_state_marker(root: Node3D, can_place: bool, is_active: bool, transparent: bool) -> void:
 	var marker_name := "__StateMarker"

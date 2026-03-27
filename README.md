@@ -17,20 +17,23 @@ It is not the full simulation. The focus is a Camera3D-based prototype where the
 
 - `WASD` or arrow keys: move camera
 - Mouse wheel: zoom camera
-- Left UI buttons: choose `Road`, `House`, `Cafe`, or `Tree`
+- Left UI buttons: choose `Road`, `House`, `Cafe`, `Tree`, or `Remove`
 - Left click on the ground: place selected item
 - Hold left mouse with `Road` selected: drag to paint roads
+- With `Remove` selected, left click a placed object to clear that cell
 
 ## Included in this branch
 
 - `Main`, `World3D`, `UIRoot`, `Managers`
 - `Node3D` + `Camera3D`
-- Flat build grid with stronger hover-cell feedback
-- Ghost preview with valid / blocked / inactive states
+- Flat build grid with clearer hover-cell and state feedback
+- Ghost preview with valid / blocked / inactive / remove-target states
 - Grid-snapped placement
 - Duplicate placement blocking
 - Road drag placement
+- Remove tool
 - Road-adjacent active / inactive visuals for `House` and `Cafe`
+- Tighter camera movement and zoom limits for the build area
 
 ## Current limits
 

@@ -3,11 +3,13 @@ extends Node3D
 const GROUND_Y := 0.0
 const CAMERA_MOVE_SPEED := 16.0
 const MIN_CAMERA_DISTANCE := 14.0
-const MAX_CAMERA_DISTANCE := 34.0
+const MAX_CAMERA_DISTANCE := 28.0
 const ZOOM_STEP := 1.6
 const HOVER_VALID_COLOR := Color(0.45, 0.98, 0.68, 0.58)
 const HOVER_BLOCKED_COLOR := Color(1.0, 0.42, 0.42, 0.72)
 const HOVER_INACTIVE_COLOR := Color(1.0, 0.78, 0.38, 0.64)
+const HOVER_REMOVE_COLOR := Color(1.0, 0.5, 0.7, 0.65)
+const HOVER_EMPTY_REMOVE_COLOR := Color(0.65, 0.65, 0.72, 0.38)
 const HOVER_RING_COLOR := Color(1.0, 1.0, 1.0, 0.7)
 
 @onready var ground_tiles: Node3D = $GroundTiles
@@ -27,23 +29,34 @@ var is_dragging_road := false
 var drag_placed_cells: Dictionary = {}
 var last_hover_summary := ""
 var last_drag_cell := Vector2i(-1, -1)
+var setup_done := false
 
 func setup(manager: BuildManager, game: GameManager) -> void:
 	build_manager = manager
 	game_manager = game
+	hover_cell = Vector2i(-1, -1)
+	is_dragging_road = false
+	drag_placed_cells.clear()
+	last_hover_summary = ""
+	last_drag_cell = Vector2i(-1, -1)
 	if not build_manager.placements_changed.is_connected(_rebuild_placed_objects):
 		build_manager.placements_changed.connect(_rebuild_placed_objects)
 	if not build_manager.selection_changed.is_connected(_on_selection_changed):
 		build_manager.selection_changed.connect(_on_selection_changed)
 	preview.setup(BuildManager.CELL_SIZE)
-	_build_ground()
-	_setup_hover_indicator()
+	if not setup_done:
+		_build_ground()
+		_setup_hover_indicator()
+		setup_done = true
+	_clamp_camera_rig()
 	_update_camera_transform()
 	_rebuild_placed_objects()
 
 func _process(delta: float) -> void:
 	if build_manager == null:
 		return
+	if is_dragging_road and not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+		_end_drag()
 	_handle_camera_move(delta)
 	_update_hover_from_mouse()
 
@@ -142,6 +155,17 @@ func _refresh_preview() -> void:
 	if hover_cell.x < 0 or not build_manager.is_inside(hover_cell):
 		preview.hide_preview()
 		return
+	if build_manager.is_remove_selected():
+		var hovered_data: PlaceableData = build_manager.get_data_at(hover_cell)
+		if hovered_data == null:
+			preview.hide_preview()
+			return
+		preview.show_remove_preview(
+			hovered_data,
+			build_manager.cell_to_world(hover_cell),
+			build_manager.is_active_at(hover_cell)
+		)
+		return
 	var selected: PlaceableData = build_manager.get_selected_data()
 	if selected == null:
 		preview.hide_preview()
@@ -181,14 +205,17 @@ func _drag_place_road() -> void:
 		return
 	if last_drag_cell.x < 0:
 		last_drag_cell = hover_cell
+	var cells_to_place: Array[Vector2i] = []
 	for cell in _cells_between(last_drag_cell, hover_cell):
 		var key := "%d,%d" % [cell.x, cell.y]
 		if drag_placed_cells.has(key):
 			continue
-		if build_manager.place("road", cell, true):
-			drag_placed_cells[key] = true
-			game_manager.set_status("Laying road... release left mouse to stop.")
-			last_hover_summary = ""
+		drag_placed_cells[key] = true
+		cells_to_place.append(cell)
+	var placed_count: int = build_manager.place_many("road", cells_to_place, true)
+	if placed_count > 0:
+		game_manager.set_status("Laying road... release left mouse to stop.")
+		last_hover_summary = ""
 	last_drag_cell = hover_cell
 
 func _end_drag() -> void:
@@ -217,11 +244,11 @@ func _handle_camera_move(delta: float) -> void:
 	if move == Vector3.ZERO:
 		return
 	camera_rig.position += move.normalized() * CAMERA_MOVE_SPEED * delta
-	var half_extent := build_manager.board_half_extent() - Vector2(BuildManager.CELL_SIZE * 1.5, BuildManager.CELL_SIZE * 1.5)
-	camera_rig.position.x = clampf(camera_rig.position.x, -half_extent.x, half_extent.x)
-	camera_rig.position.z = clampf(camera_rig.position.z, -half_extent.y, half_extent.y)
+	_clamp_camera_rig()
 
 func _update_camera_transform() -> void:
+	camera_distance = clampf(camera_distance, MIN_CAMERA_DISTANCE, MAX_CAMERA_DISTANCE)
+	_clamp_camera_rig()
 	camera.position = Vector3(0.0, camera_distance * 0.82, camera_distance)
 	camera.rotation_degrees = Vector3(-42.0, 0.0, 0.0)
 
@@ -248,6 +275,16 @@ func _on_selection_changed(_placeable_id: String) -> void:
 
 func _update_hover_indicator_visuals() -> void:
 	if hover_cell.x < 0 or not build_manager.is_inside(hover_cell):
+		return
+	var has_entry: bool = build_manager.has_entry(hover_cell)
+	if build_manager.is_remove_selected():
+		var remove_color: Color = HOVER_REMOVE_COLOR if has_entry else HOVER_EMPTY_REMOVE_COLOR
+		var remove_mesh := hover_indicator.mesh as BoxMesh
+		if remove_mesh != null:
+			remove_mesh.size = Vector3(BuildManager.CELL_SIZE * 0.98, 0.24, BuildManager.CELL_SIZE * 0.98)
+		hover_indicator.material_override = _make_material(remove_color, true)
+		hover_ring.scale = Vector3(1.1, 1.0, 1.1)
+		hover_ring.material_override = _make_material(remove_color.lightened(0.15), true)
 		return
 	var selected: PlaceableData = build_manager.get_selected_data()
 	if selected == null:
@@ -297,3 +334,11 @@ func _cells_between(start: Vector2i, finish: Vector2i) -> Array[Vector2i]:
 			current.y += 1 if delta.y > 0 else -1
 		cells.append(current)
 	return cells
+
+func _clamp_camera_rig() -> void:
+	if build_manager == null:
+		return
+	var margin := BuildManager.CELL_SIZE * 2.5
+	var half_extent := build_manager.board_half_extent() - Vector2(margin, margin)
+	camera_rig.position.x = clampf(camera_rig.position.x, -half_extent.x, half_extent.x)
+	camera_rig.position.z = clampf(camera_rig.position.z, -half_extent.y, half_extent.y)
