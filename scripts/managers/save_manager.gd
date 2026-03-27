@@ -43,7 +43,7 @@ func load_game() -> bool:
 	if file == null:
 		load_completed.emit(false)
 		return false
-	var parsed := JSON.parse_string(file.get_as_text())
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
 	file.close()
 	if typeof(parsed) != TYPE_DICTIONARY:
 		load_completed.emit(false)

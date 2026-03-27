@@ -152,7 +152,7 @@ func get_layer_cells(layer_name: String) -> Dictionary:
 
 func get_cell_payload(cell: Vector2i) -> Dictionary:
 	if buildings.has(cell):
-		var building := buildings[cell]
+		var building: Dictionary = buildings[cell]
 		var data: PlaceableData = get_definition(building["id"])
 		return {
 			"type": "building",

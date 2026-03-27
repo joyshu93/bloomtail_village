@@ -29,7 +29,7 @@ const RESIDENT_PATHS := [
 static func load_placeables() -> Array[PlaceableData]:
 	var results: Array[PlaceableData] = []
 	for path in PLACEABLE_PATHS:
-		var resource := load(path)
+		var resource: Resource = load(path)
 		if resource is PlaceableData:
 			results.append(resource)
 	return results
@@ -37,7 +37,7 @@ static func load_placeables() -> Array[PlaceableData]:
 static func load_residents() -> Array[ResidentProfile]:
 	var results: Array[ResidentProfile] = []
 	for path in RESIDENT_PATHS:
-		var resource := load(path)
+		var resource: Resource = load(path)
 		if resource is ResidentProfile:
 			results.append(resource)
 	return results

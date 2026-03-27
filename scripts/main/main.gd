@@ -24,7 +24,7 @@ func _ready() -> void:
 	game_manager.start_new_game()
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode == Key.SPACE:
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_SPACE:
 		game_manager.toggle_pause()
 
 func _on_day_passed(_day: int) -> void:

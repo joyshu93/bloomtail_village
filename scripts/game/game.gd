@@ -32,13 +32,13 @@ func _process(delta: float) -> void:
 	if build_manager == null:
 		return
 	var move := Vector2.ZERO
-	if Input.is_key_pressed(Key.A) or Input.is_key_pressed(Key.LEFT):
+	if Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):
 		move.x -= 1.0
-	if Input.is_key_pressed(Key.D) or Input.is_key_pressed(Key.RIGHT):
+	if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
 		move.x += 1.0
-	if Input.is_key_pressed(Key.W) or Input.is_key_pressed(Key.UP):
+	if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP):
 		move.y -= 1.0
-	if Input.is_key_pressed(Key.S) or Input.is_key_pressed(Key.DOWN):
+	if Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN):
 		move.y += 1.0
 	if move != Vector2.ZERO:
 		camera.position += move.normalized() * CAMERA_PAN_SPEED * delta
@@ -48,19 +48,19 @@ func _process(delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if build_manager == null:
 		return
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode == Key.ESCAPE:
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
 		build_manager.cancel_build_mode()
 		return
-	if event is InputEventMouseButton and event.pressed and event.button_index == MouseButton.WHEEL_UP:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_WHEEL_UP:
 		_set_zoom(camera.zoom.x - ZOOM_STEP)
 		return
-	if event is InputEventMouseButton and event.pressed and event.button_index == MouseButton.WHEEL_DOWN:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 		_set_zoom(camera.zoom.x + ZOOM_STEP)
 		return
-	if event is InputEventMouseButton and event.pressed and event.button_index == MouseButton.RIGHT:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_RIGHT:
 		build_manager.cancel_build_mode()
 		return
-	if event is InputEventMouseButton and event.pressed and event.button_index == MouseButton.LEFT:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		var cell := world_to_cell(get_local_mouse_position())
 		if not build_manager.is_in_bounds(cell):
 			return
