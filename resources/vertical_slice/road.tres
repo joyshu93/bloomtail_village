@@ -8,6 +8,7 @@ id = "road"
 display_name = "Road"
 category = "infrastructure"
 layer = "road"
+cost = 5
 description = "A simple ground path."
 effect_text = "Enables nearby buildings."
 requires_road = false

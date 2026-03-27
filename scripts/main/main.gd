@@ -8,5 +8,6 @@ extends Node
 func _ready() -> void:
 	game_manager.setup()
 	build_manager.setup(game_manager)
+	game_manager.attach_build_manager(build_manager)
 	world_3d.setup(build_manager, game_manager)
 	ui_root.setup(build_manager, game_manager)

@@ -3,6 +3,8 @@ extends Control
 var build_manager: BuildManager
 var game_manager: GameManager
 
+var top_panel: PanelContainer
+var top_stats_label: Label
 var button_panel: PanelContainer
 var button_box: VBoxContainer
 var status_panel: PanelContainer
@@ -29,13 +31,30 @@ func _ready() -> void:
 func _build_layout() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
+	top_panel = PanelContainer.new()
+	add_child(top_panel)
+	top_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+	top_panel.offset_left = 16
+	top_panel.offset_top = 16
+	top_panel.offset_right = -16
+	top_panel.offset_bottom = 72
+
+	top_stats_label = Label.new()
+	top_panel.add_child(top_stats_label)
+	top_stats_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	top_stats_label.offset_left = 14
+	top_stats_label.offset_top = 12
+	top_stats_label.offset_right = -14
+	top_stats_label.offset_bottom = -12
+	top_stats_label.text = "Funds: 0   Day: 1   Village: 0   Cafe Income: 0/day"
+
 	button_panel = PanelContainer.new()
 	add_child(button_panel)
 	button_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
 	button_panel.offset_left = 16
-	button_panel.offset_top = 16
+	button_panel.offset_top = 88
 	button_panel.offset_right = 274
-	button_panel.offset_bottom = 348
+	button_panel.offset_bottom = 430
 
 	button_box = VBoxContainer.new()
 	button_box.add_theme_constant_override("separation", 8)
@@ -104,10 +123,12 @@ func _finish_setup() -> void:
 	if not signals_connected:
 		build_manager.selection_changed.connect(_on_selection_changed)
 		game_manager.status_changed.connect(_on_status_changed)
+		game_manager.stats_changed.connect(_on_stats_changed)
 		signals_connected = true
 	_rebuild_placeable_buttons()
 	_on_selection_changed(build_manager.selected_id)
 	_on_status_changed(game_manager.status_text)
+	_on_stats_changed(game_manager.money, game_manager.day, game_manager.population, game_manager.daily_income)
 
 func _rebuild_placeable_buttons() -> void:
 	for id in selected_buttons.keys():
@@ -116,7 +137,7 @@ func _rebuild_placeable_buttons() -> void:
 	selected_buttons.clear()
 	for placeable in build_manager.get_placeables():
 		var button := Button.new()
-		button.text = "%s  [%s]" % [placeable.display_name, placeable.category.capitalize()]
+		button.text = "%s  [%s]  %d c" % [placeable.display_name, placeable.category.capitalize(), placeable.cost]
 		button.custom_minimum_size = Vector2(0, 46)
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.toggle_mode = true
@@ -152,7 +173,17 @@ func _on_selection_changed(placeable_id: String) -> void:
 		return
 	selection_title.text = "Selected: %s" % selected.display_name
 	var road_text: String = "Needs adjacent road" if selected.requires_road else "No road needed"
-	selection_detail.text = "%s\n%s" % [selected.description, road_text]
+	var income_text: String = "" if selected.daily_income <= 0 else "Income +%d/day" % selected.daily_income
+	var population_text: String = "" if selected.resident_capacity <= 0 else "Village +%d" % selected.resident_capacity
+	var extra_bits: PackedStringArray = PackedStringArray([road_text])
+	if income_text != "":
+		extra_bits.append(income_text)
+	if population_text != "":
+		extra_bits.append(population_text)
+	selection_detail.text = "%s\nCost: %d\n%s" % [selected.description, selected.cost, ", ".join(extra_bits)]
 
 func _on_status_changed(text: String) -> void:
 	status_label.text = "%s\n\nControls:\nWASD / Arrow Keys move camera\nMouse Wheel zoom\nLeft Click place\nRoad: drag to paint" % text
+
+func _on_stats_changed(money: int, day: int, population: int, daily_income: int) -> void:
+	top_stats_label.text = "Funds: %d   Day: %d   Village: %d   Cafe Income: %d/day" % [money, day, population, daily_income]

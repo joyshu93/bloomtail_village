@@ -8,6 +8,7 @@ id = "tree"
 display_name = "Tree"
 category = "decor"
 layer = "decor"
+cost = 30
 description = "A placeholder tree built from primitives."
 effect_text = "Does not require a road."
 requires_road = false

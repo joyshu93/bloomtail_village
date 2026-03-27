@@ -170,7 +170,7 @@ func _refresh_preview() -> void:
 	if selected == null:
 		preview.hide_preview()
 		return
-	var can_place := build_manager.can_place(hover_cell)
+	var can_place := build_manager.can_place_selected_at(hover_cell)
 	var would_be_active := build_manager.would_be_active(hover_cell, selected)
 	preview.show_preview(
 		selected,
@@ -210,12 +210,17 @@ func _drag_place_road() -> void:
 		var key := "%d,%d" % [cell.x, cell.y]
 		if drag_placed_cells.has(key):
 			continue
-		drag_placed_cells[key] = true
 		cells_to_place.append(cell)
 	var placed_count: int = build_manager.place_many("road", cells_to_place, true)
 	if placed_count > 0:
+		for cell in cells_to_place:
+			var placed_data: PlaceableData = build_manager.get_data_at(cell)
+			if placed_data != null and placed_data.id == "road":
+				drag_placed_cells["%d,%d" % [cell.x, cell.y]] = true
 		game_manager.set_status("Laying road... release left mouse to stop.")
 		last_hover_summary = ""
+	elif cells_to_place.size() > 0 and not game_manager.can_afford(build_manager.get_placeable("road").cost):
+		game_manager.set_status("Not enough money to keep laying roads.")
 	last_drag_cell = hover_cell
 
 func _end_drag() -> void:
@@ -290,7 +295,7 @@ func _update_hover_indicator_visuals() -> void:
 	if selected == null:
 		hover_indicator.material_override = _make_material(HOVER_BLOCKED_COLOR, true)
 		return
-	var can_place := build_manager.can_place(hover_cell)
+	var can_place := build_manager.can_place_selected_at(hover_cell)
 	var would_be_active := build_manager.would_be_active(hover_cell, selected)
 	var color := HOVER_VALID_COLOR
 	var hover_height := 0.18

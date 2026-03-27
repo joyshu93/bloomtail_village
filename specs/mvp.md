@@ -2,7 +2,7 @@
 
 ## Branch note
 
-The `feature/3d-vertical-slice` branch intentionally narrows this scope to a 3D click-to-place prototype. The older 2D top-down UI contract, residents, saving, and economy loop are deferred.
+The `feature/3d-vertical-slice` branch intentionally narrows this scope to a 3D click-to-place prototype with a very shallow money/day loop. The older 2D top-down UI contract, residents, saving, and the fuller economy loop are still deferred.
 
 ## Required loop
 

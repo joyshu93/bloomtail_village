@@ -50,6 +50,10 @@ func is_road_selected() -> bool:
 func is_remove_selected() -> bool:
 	return selected_id == REMOVE_TOOL_ID
 
+func get_selected_cost() -> int:
+	var selected := get_selected_data()
+	return 0 if selected == null else selected.cost
+
 func select_placeable(placeable_id: String) -> void:
 	if placeable_id != REMOVE_TOOL_ID and not placeables.has(placeable_id):
 		return
@@ -58,9 +62,9 @@ func select_placeable(placeable_id: String) -> void:
 	if is_remove_selected():
 		game_manager.set_status("Remove selected. Click a placed object to clear it.")
 	elif is_road_selected():
-		game_manager.set_status("Road selected. Left click and drag across the grid to lay roads quickly.")
+		game_manager.set_status("Road selected. Cost %d. Left click and drag across the grid to lay roads quickly." % get_selected_cost())
 	else:
-		game_manager.set_status("%s selected. Move the mouse over the grid and left click to place." % get_selected_name())
+		game_manager.set_status("%s selected. Cost %d. Move the mouse over the grid and left click to place." % [get_selected_name(), get_selected_cost()])
 
 func is_inside(cell: Vector2i) -> bool:
 	return cell.x >= 0 and cell.y >= 0 and cell.x < GRID_WIDTH and cell.y < GRID_DEPTH
@@ -72,7 +76,18 @@ func can_place(cell: Vector2i) -> bool:
 	return is_inside(cell) and not is_occupied(cell)
 
 func can_place_id(placeable_id: String, cell: Vector2i) -> bool:
-	return placeables.has(placeable_id) and can_place(cell)
+	return placeables.has(placeable_id) and can_place(cell) and can_afford_placeable(placeable_id)
+
+func can_afford_placeable(placeable_id: String) -> bool:
+	if placeable_id == REMOVE_TOOL_ID:
+		return true
+	var data: PlaceableData = get_placeable(placeable_id)
+	return data != null and game_manager.can_afford(data.cost)
+
+func can_place_selected_at(cell: Vector2i) -> bool:
+	if is_remove_selected():
+		return has_entry(cell)
+	return can_place_id(selected_id, cell)
 
 func has_entry(cell: Vector2i) -> bool:
 	return placements.has(_cell_key(cell))
@@ -121,9 +136,11 @@ func get_hover_message(cell: Vector2i, placeable_id: String = selected_id) -> St
 		return "Outside the buildable area."
 	if is_occupied(cell):
 		return "Cell %d, %d is occupied." % [cell.x + 1, cell.y + 1]
+	if not game_manager.can_afford(data.cost):
+		return "Not enough money for %s. Need %d coins." % [data.display_name, data.cost]
 	if data.requires_road and not would_be_active(cell, data):
 		return "%s can be placed here, but it will stay inactive until a road touches it." % data.display_name
-	return "Ready to place %s at %d, %d." % [data.display_name, cell.x + 1, cell.y + 1]
+	return "Ready to place %s at %d, %d for %d coins." % [data.display_name, cell.x + 1, cell.y + 1, data.cost]
 
 func place_selected(cell: Vector2i) -> bool:
 	if is_remove_selected():
@@ -138,6 +155,10 @@ func place(placeable_id: String, cell: Vector2i, silent: bool = false) -> bool:
 			game_manager.set_status("That cell is already occupied or outside the buildable area.")
 		return false
 	var data: PlaceableData = placeables.get(placeable_id)
+	if not game_manager.spend_money(data.cost):
+		if not silent:
+			game_manager.set_status("Not enough money for %s. Need %d coins." % [data.display_name, data.cost])
+		return false
 	var active_after_place := would_be_active(cell, data)
 	placements[_cell_key(cell)] = {
 		"id": data.id,
@@ -162,6 +183,8 @@ func place_many(placeable_id: String, cells: Array[Vector2i], silent: bool = fal
 		if not can_place(cell):
 			continue
 		var data: PlaceableData = placeables.get(placeable_id)
+		if not game_manager.spend_money(data.cost):
+			break
 		placements[_cell_key(cell)] = {
 			"id": data.id,
 			"active": would_be_active(cell, data)
