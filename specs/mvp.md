@@ -1,5 +1,9 @@
 # MVP Scope
 
+## Branch note
+
+The `feature/3d-vertical-slice` branch intentionally narrows this scope to a 3D click-to-place prototype. The older 2D top-down UI contract, residents, saving, and economy loop are deferred.
+
 ## Required loop
 
 1. Start a new village on a 24x24 grid.

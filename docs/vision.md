@@ -17,3 +17,7 @@ The player is not building a giant efficient city. The goal is to create a tiny 
 - Every placement should tell the player what changed: score, happiness, or resident reaction.
 - Roads matter because they make buildings feel connected, but they should stay easy to understand.
 - Residents should create soft goals through requests rather than punishing failure states.
+
+## Branch note
+
+The `feature/3d-vertical-slice` branch intentionally ignores the older 2D top-down scene contract. It keeps the cozy village fantasy, but the prototype is built around 3D placement, Camera3D input, and simple placeholder meshes so the core click-to-place loop can be proven first.

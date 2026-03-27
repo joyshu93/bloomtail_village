@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="PlaceableData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/placeable_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "cafe"
+display_name = "Cafe"
+category = "building"
+layer = "building"
+description = "A simple placeholder cafe."
+effect_text = "Shows inactive if not touching a road."
+requires_road = true
+color = Color(0.9, 0.56, 0.48, 1)
+mesh_kind = "cafe"
+mesh_scale = Vector3(0.9, 1.2, 0.9)
+active_color = Color(0.9, 0.56, 0.48, 1)
+inactive_color = Color(0.44, 0.46, 0.5, 1)
+preview_color = Color(0.45, 0.84, 1, 0.45)
+blocked_color = Color(1, 0.35, 0.35, 0.4)

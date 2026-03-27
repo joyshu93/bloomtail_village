@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="PlaceableData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/placeable_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "house"
+display_name = "House"
+category = "building"
+layer = "building"
+description = "A compact placeholder home."
+effect_text = "Shows inactive if not touching a road."
+requires_road = true
+color = Color(0.95, 0.8, 0.62, 1)
+mesh_kind = "house"
+mesh_scale = Vector3(0.78, 1.5, 0.78)
+active_color = Color(0.95, 0.8, 0.62, 1)
+inactive_color = Color(0.46, 0.48, 0.52, 1)
+preview_color = Color(0.45, 0.84, 1, 0.45)
+blocked_color = Color(1, 0.35, 0.35, 0.4)

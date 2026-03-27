@@ -1,46 +1,40 @@
 # CityGame
 
-Godot 4 + GDScript cozy village-building MVP. The project focuses on a small 24x24 town where animal residents move in, react to their surroundings, and nudge the player toward a cute and comfortable layout.
+Godot 4 + GDScript 3D vertical slice for a cozy village builder.
+
+## Current goal
+
+This branch proves one thing: 3D grid placement works reliably.
+
+It is not the full simulation. The focus is a Camera3D-based prototype where the player can select a placeable, hover the ground, see a preview, and click to place a snapped 3D object.
 
 ## Run
 
-1. Open the folder in Godot 4.
-2. Run the main scene: `res://scenes/main/Main.tscn`.
-3. The project starts directly in the playable village screen.
+1. Open the project in Godot 4.
+2. Run `res://scenes/main/Main.tscn`.
 
 ## Controls
 
-- Left click: place selected item or select a tile / resident
-- Right click or `Esc`: cancel build mode
-- `Space`: pause / resume
-- Top bar speed buttons: pause, 1x, 2x, 4x
-- Left build menu: choose road, building, decor, or remove mode
-- Right panel: inspect current tile, building, or resident
-- `Village Report`: open the town score summary for coziness, nature, convenience, and atmosphere
-- `Save / Settings`: save or load the village
+- `WASD` or arrow keys: move camera
+- Mouse wheel: zoom camera
+- Left UI buttons: choose `Road`, `House`, `Cafe`, or `Tree`
+- Left click on the ground: place selected item
 
-## Current MVP features
+## Included in this branch
 
-- 24x24 tile village map
-- Place roads, houses, cafe, general store, workshop, plaza, and simple decor
-- Road-connected building activation
-- Up to 8 animal residents with personalities, preferences, and simple requests
-- Daily money, happiness, and town score updates
-- Save and load from one local slot
-- Notifications for move-ins, requests, and environmental improvements
+- `Main`, `World3D`, `UIRoot`, `Managers`
+- `Node3D` + `Camera3D`
+- Flat build grid with hover highlight
+- Ghost preview with valid / blocked states
+- Grid-snapped placement
+- Duplicate placement blocking
+- Road-adjacent active / inactive visuals for `House` and `Cafe`
 
 ## Current limits
 
-- Placeholder art only
-- Single-cell buildings and decor only
-- Residents are represented as simple markers
-- No pathfinding, animations, or advanced AI routines
-- One save slot
-- No main menu flow yet; the settings popup exposes the button as a placeholder
-
-## Suggested next work
-
-1. Replace placeholder rendering with proper tiles and sprites.
-2. Add more resident request variety and short roaming behavior.
-3. Improve building placement UX with drag roads and richer hover feedback.
-4. Add a title screen, multiple saves, and audio content.
+- Placeholder primitive meshes only
+- No residents
+- No save/load
+- No economy or scoring
+- No quests or seasonal systems
+- No detailed UI beyond selection and status text

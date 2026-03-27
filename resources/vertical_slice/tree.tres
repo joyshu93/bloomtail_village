@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="PlaceableData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/placeable_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "tree"
+display_name = "Tree"
+category = "decor"
+layer = "decor"
+description = "A placeholder tree built from primitives."
+effect_text = "Does not require a road."
+requires_road = false
+color = Color(0.32, 0.68, 0.38, 1)
+mesh_kind = "tree"
+mesh_scale = Vector3(0.68, 1.6, 0.68)
+active_color = Color(0.32, 0.68, 0.38, 1)
+inactive_color = Color(0.32, 0.68, 0.38, 1)
+preview_color = Color(0.45, 0.84, 1, 0.45)
+blocked_color = Color(1, 0.35, 0.35, 0.4)

@@ -10,8 +10,7 @@ Core rules:
 
 1. Read [docs/vision.md](./docs/vision.md), [docs/project-overview.md](./docs/project-overview.md), [docs/dev-setup.md](./docs/dev-setup.md), [specs/mvp.md](./specs/mvp.md), and [specs/systems.md](./specs/systems.md) before changing gameplay code.
 2. Keep the Godot 4 + GDScript MVP playable at all times. Favor simple working structure over clever abstractions.
-3. Preserve the requested scene contract:
-   `Main`, `Game`, `UIRoot`, `Managers`, `TileMapGround`, `TileMapRoad`, `TileMapBuildings`, `TileMapDecor`, `Residents`.
+3. Preserve the requested scene contract for the active branch. On `feature/3d-vertical-slice`, use the 3D scene structure instead of the older 2D `TileMap*` contract.
 4. Prefer data-driven placeables and resident templates. New content should be added through `resources/` first.
 5. Save data must remain forward-readable JSON stored in `user://cozy_village_save.json`.
 6. Do not introduce plugins, C#, addons, or external dependencies without explicit approval.

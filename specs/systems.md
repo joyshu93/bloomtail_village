@@ -1,5 +1,9 @@
 # Systems Specification
 
+## Branch note
+
+The `feature/3d-vertical-slice` branch uses a separate 3D scene flow and placeholder meshes. The old 2D tile rendering assumptions do not apply here.
+
 ## Grid
 
 - 24 by 24 cells
