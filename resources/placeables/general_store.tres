@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="PlaceableData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/placeable_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "general_store"
+display_name = "General Store"
+category = "commercial"
+layer = "buildings"
+cost = 110
+description = "A friendly shop for everyday needs."
+effect_text = "Convenience +3"
+requires_road = true
+daily_income = 16
+resident_capacity = 0
+color = Color(0.984314, 0.807843, 0.431373, 1)
+tags = PackedStringArray("shop")
+score_coziness = 1
+score_nature = 0
+score_convenience = 3
+score_vibe = 1

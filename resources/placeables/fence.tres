@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="PlaceableData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/placeable_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "fence"
+display_name = "Fence"
+category = "decor"
+layer = "decor"
+cost = 9
+description = "A simple fence that frames a lane or garden."
+effect_text = "Coziness +1"
+requires_road = false
+daily_income = 0
+resident_capacity = 0
+color = Color(0.898039, 0.858824, 0.729412, 1)
+tags = PackedStringArray("cozy")
+score_coziness = 1
+score_nature = 0
+score_convenience = 0
+score_vibe = 0

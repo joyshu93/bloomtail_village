@@ -1,0 +1,11 @@
+name = "docs"
+description = "Owns README, specs, art direction notes, and keeping project documentation aligned with implementation."
+model = "gpt-5.4-mini"
+
+[responsibilities]
+primary = [
+  "Update MVP scope docs",
+  "Record control scheme and known limitations",
+  "Capture design principles and balance guardrails",
+  "Keep onboarding notes current"
+]

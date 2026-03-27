@@ -1,0 +1,35 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/game/game.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/game/grid_layer.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/game/residents_layer.gd" id="3"]
+[ext_resource type="Script" path="res://scripts/game/placement_cursor.gd" id="4"]
+
+[node name="Game" type="Node2D"]
+script = ExtResource("1")
+
+[node name="TileMapGround" type="Node2D" parent="."]
+script = ExtResource("2")
+layer_name = "ground"
+
+[node name="TileMapRoad" type="Node2D" parent="."]
+script = ExtResource("2")
+layer_name = "road"
+
+[node name="TileMapBuildings" type="Node2D" parent="."]
+script = ExtResource("2")
+layer_name = "buildings"
+
+[node name="TileMapDecor" type="Node2D" parent="."]
+script = ExtResource("2")
+layer_name = "decor"
+
+[node name="Residents" type="Node2D" parent="."]
+script = ExtResource("3")
+
+[node name="PlacementCursor" type="Node2D" parent="."]
+script = ExtResource("4")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(384, 384)
+enabled = true

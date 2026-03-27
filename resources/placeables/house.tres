@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="PlaceableData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/placeable_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "house"
+display_name = "Resident House"
+category = "housing"
+layer = "buildings"
+cost = 90
+description = "A cozy cottage for one animal resident."
+effect_text = "Resident capacity +1"
+requires_road = true
+daily_income = 10
+resident_capacity = 1
+color = Color(0.972549, 0.85098, 0.713725, 1)
+tags = PackedStringArray("home")
+score_coziness = 3
+score_nature = 0
+score_convenience = 1
+score_vibe = 1

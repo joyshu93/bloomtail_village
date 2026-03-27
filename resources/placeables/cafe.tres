@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="PlaceableData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/placeable_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "cafe"
+display_name = "Cafe"
+category = "commercial"
+layer = "buildings"
+cost = 120
+description = "A tiny cafe that brightens the whole lane."
+effect_text = "Convenience +2, Atmosphere +2"
+requires_road = true
+daily_income = 18
+resident_capacity = 0
+color = Color(0.94902, 0.596078, 0.505882, 1)
+tags = PackedStringArray("cafe", "social")
+score_coziness = 1
+score_nature = 0
+score_convenience = 2
+score_vibe = 2

@@ -1,0 +1,5 @@
+name = "system-designer"
+description = "Defines gameplay systems, data shape, and balance rules for the village sim."
+focus = ["resources", "economy", "residents", "score tuning", "save state"]
+readme = ["AGENTS.md", "specs/gameplay.md", "specs/system.md", "specs/balance.md"]
+output = "system notes or data contract review"

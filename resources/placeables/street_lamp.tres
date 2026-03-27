@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="PlaceableData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/placeable_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "street_lamp"
+display_name = "Street Lamp"
+category = "decor"
+layer = "decor"
+cost = 18
+description = "A warm little lamp for cozy evenings."
+effect_text = "Convenience +1, Atmosphere +2"
+requires_road = false
+daily_income = 0
+resident_capacity = 0
+color = Color(0.992157, 0.862745, 0.482353, 1)
+tags = PackedStringArray("lamp")
+score_coziness = 0
+score_nature = 0
+score_convenience = 1
+score_vibe = 2

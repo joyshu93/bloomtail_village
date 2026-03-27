@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="PlaceableData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/placeable_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "tree"
+display_name = "Tree"
+category = "decor"
+layer = "decor"
+cost = 16
+description = "A leafy tree that softens the whole street."
+effect_text = "Nature +3, Coziness +1"
+requires_road = false
+daily_income = 0
+resident_capacity = 0
+color = Color(0.278431, 0.603922, 0.329412, 1)
+tags = PackedStringArray("trees", "nature")
+score_coziness = 1
+score_nature = 3
+score_convenience = 0
+score_vibe = 0

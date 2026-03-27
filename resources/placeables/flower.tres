@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="PlaceableData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/placeable_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "flower"
+display_name = "Flower Patch"
+category = "decor"
+layer = "decor"
+cost = 10
+description = "A bright little bed of flowers."
+effect_text = "Nature +2, Atmosphere +1"
+requires_road = false
+daily_income = 0
+resident_capacity = 0
+color = Color(0.992157, 0.490196, 0.670588, 1)
+tags = PackedStringArray("flowers", "nature")
+score_coziness = 0
+score_nature = 2
+score_convenience = 0
+score_vibe = 1

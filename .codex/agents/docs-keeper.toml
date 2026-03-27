@@ -1,0 +1,5 @@
+name = "docs-keeper"
+description = "Keeps repository docs concise, consistent, and useful for implementation work."
+focus = ["documentation", "spec consistency", "operating rules", "readability"]
+readme = ["AGENTS.md", "docs/project-overview.md", "docs/dev-setup.md", "specs/art-direction.md"]
+output = "doc cleanup or spec consistency check"

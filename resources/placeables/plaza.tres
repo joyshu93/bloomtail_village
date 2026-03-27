@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="PlaceableData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/placeable_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "plaza"
+display_name = "Plaza"
+category = "public"
+layer = "buildings"
+cost = 80
+description = "A shared square where villagers like to gather."
+effect_text = "Coziness +2, Atmosphere +2"
+requires_road = true
+daily_income = 6
+resident_capacity = 0
+color = Color(0.564706, 0.733333, 0.87451, 1)
+tags = PackedStringArray("plaza", "social")
+score_coziness = 2
+score_nature = 0
+score_convenience = 1
+score_vibe = 2

@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="PlaceableData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/placeable_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "road"
+display_name = "Road"
+category = "road"
+layer = "road"
+cost = 8
+description = "A simple dirt lane that connects the village together."
+effect_text = "Required for building activation"
+requires_road = false
+daily_income = 0
+resident_capacity = 0
+color = Color(0.835294, 0.741176, 0.603922, 1)
+tags = PackedStringArray("road")
+score_coziness = 0
+score_nature = 0
+score_convenience = 1
+score_vibe = 0
